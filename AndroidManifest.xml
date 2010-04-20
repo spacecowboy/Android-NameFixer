@@ -24,8 +24,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="ContactAdder" android:label="@string/addContactTitle">
-        </activity>
 
     </application>
     <uses-sdk android:minSdkVersion="5" android:targetSdkVersion="5" />

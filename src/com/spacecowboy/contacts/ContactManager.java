@@ -25,7 +25,6 @@ import android.accounts.OnAccountsUpdateListener;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
@@ -49,6 +48,12 @@ import android.widget.TextView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
+/**
+ * This application reads all the contacts from the selected account, or all contacts if no account is selected.
+ * The user can then choose what display name to assign them.
+ * @author Jonas Kalderstam
+ *
+ */
 public final class ContactManager extends Activity implements
 		OnAccountsUpdateListener {
 
@@ -56,8 +61,6 @@ public final class ContactManager extends Activity implements
 
 	private Button					mFixNamesButton;
 	private ListView				mContactList;
-	private boolean					mShowInvisible;
-	// private CheckBox mShowInvisibleControl;
 	private CheckBox				mFirstLastControl;
 	private boolean					mFirstLast;
 	private CheckBox				mCommaControl;
@@ -89,8 +92,6 @@ public final class ContactManager extends Activity implements
 		mContactList = (ListView) findViewById(R.id.contactList);
 
 		// Initialize class properties
-		mShowInvisible = false;
-		// mShowInvisibleControl.setChecked(mShowInvisible);
 		mFirstLast = true;
 		mFirstLastControl = (CheckBox) findViewById(R.id.firstlastcheck);
 		mFirstLastControl.setChecked(mFirstLast);
@@ -139,6 +140,7 @@ public final class ContactManager extends Activity implements
 			public void onItemSelected(AdapterView<?> parent, View view,
 					int position, long i) {
 				updateAccountSelection();
+				populateContactList();
 			}
 
 			public void onNothingSelected(AdapterView<?> parent) {
@@ -148,8 +150,8 @@ public final class ContactManager extends Activity implements
 			}
 		});
 
-		// Populate the contact list
-		// populateContactList();
+		// Populate the contact list here as well, just in case no accounts exists.
+		populateContactList();
 	}
 
 	/**
@@ -464,6 +466,5 @@ public final class ContactManager extends Activity implements
 	private void updateAccountSelection() {
 		// Read current account selection
 		mSelectedAccount = (AccountData) mAccountSpinner.getSelectedItem();
-		populateContactList();
 	}
 }
