@@ -1,9 +1,9 @@
 package com.spacecowboy.contacts;
 
 public class Contact {
-	private String rawContactID;
-	public String getRawContactId() {
-		return rawContactID;
+	private String id;
+	public String getId() {
+		return id;
 	}
 
 	private String oldDisplayName = "";
@@ -22,7 +22,7 @@ public class Contact {
 	}
 
 	public Contact(String id, String givenname, String familyname) {
-		this.rawContactID = id;
+		this.id = id;
 		//if (displayname != null)
 		//	this.oldDisplayName = displayname;
 		if (familyname != null)
