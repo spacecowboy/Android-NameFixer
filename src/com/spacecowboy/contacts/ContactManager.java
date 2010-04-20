@@ -23,6 +23,7 @@ import android.accounts.AccountManager;
 import android.accounts.AuthenticatorDescription;
 import android.accounts.OnAccountsUpdateListener;
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -53,7 +54,7 @@ public final class ContactManager extends Activity implements
 
 	public static final String		TAG				= "ContactManager";
 
-	private Button					mAddAccountButton;
+	private Button					mFixNamesButton;
 	private ListView				mContactList;
 	private boolean					mShowInvisible;
 	// private CheckBox mShowInvisibleControl;
@@ -84,7 +85,7 @@ public final class ContactManager extends Activity implements
 
 		// Obtain handles to UI objects
 		mAccountSpinner = (Spinner) findViewById(R.id.accountSpinner);
-		mAddAccountButton = (Button) findViewById(R.id.addContactButton);
+		mFixNamesButton = (Button) findViewById(R.id.fixNamesButton);
 		mContactList = (ListView) findViewById(R.id.contactList);
 
 		// Initialize class properties
@@ -116,10 +117,10 @@ public final class ContactManager extends Activity implements
 		});
 
 		// Register handler for UI elements
-		mAddAccountButton.setOnClickListener(new View.OnClickListener() {
+		mFixNamesButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				Log.d(TAG, "mAddAccountButton clicked");
-				launchContactAdder();
+				fixNames();
 			}
 		});
 		/*
@@ -198,8 +199,9 @@ public final class ContactManager extends Activity implements
 			while (cursor.moveToNext()) {
 
 				Contact c = new Contact(
-						cursor.getString(cursor
-								.getColumnIndex(ContactsContract.Data._ID)),
+						cursor
+								.getString(cursor
+										.getColumnIndex(ContactsContract.Data.RAW_CONTACT_ID)),
 						cursor
 								.getString(cursor
 										.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME)),
@@ -245,6 +247,7 @@ public final class ContactManager extends Activity implements
 			String[] projection = new String[] {
 					ContactsContract.Data._ID,
 					ContactsContract.Data.CONTACT_ID,
+					ContactsContract.Data.RAW_CONTACT_ID,
 					ContactsContract.Data.DISPLAY_NAME,
 					ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME,
 					ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME };
@@ -303,6 +306,42 @@ public final class ContactManager extends Activity implements
 			}
 		}
 		return contact;
+	}
+
+	protected void fixNames() {
+		for (Contact c : contacts) {
+			Uri uri = ContactsContract.Data.CONTENT_URI.buildUpon()
+					.appendQueryParameter(
+							ContactsContract.RawContacts.ACCOUNT_NAME,
+							mSelectedAccount.getName()).appendQueryParameter(
+							ContactsContract.RawContacts.ACCOUNT_TYPE,
+							mSelectedAccount.getType()).build();
+			
+			ContentValues values = new ContentValues();
+			values
+					.put(
+							ContactsContract.CommonDataKinds.StructuredName.RAW_CONTACT_ID,
+							c.getRawContactId());
+			values
+					.put(
+							ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME,
+							c.getNewDisplayName(mFirstLast, mComma));
+			values
+					.put(
+							ContactsContract.CommonDataKinds.StructuredName.MIMETYPE,
+							ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE);
+			// values.put(ContactsContract.Data.DISPLAY_NAME,
+			// c.getNewDisplayName(mFirstLast, mComma));
+			try {
+				int count = getContentResolver().update(
+						ContactsContract.Data.CONTENT_URI, values, null, null);
+				System.out.println(count);
+			}
+			catch (Exception e) {
+				@SuppressWarnings("unused")
+				String s = e.getMessage();
+			}
+		}
 	}
 
 	/**

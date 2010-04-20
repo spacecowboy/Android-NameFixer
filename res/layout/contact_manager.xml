@@ -28,6 +28,6 @@
 	<Spinner android:layout_height="wrap_content"
 		android:layout_width="fill_parent" android:id="@+id/accountSpinner" />
 	<Button android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:id="@+id/addContactButton"
-		android:text="@string/addContactButtonLabel" />
+		android:layout_height="wrap_content" android:id="@+id/fixNamesButton"
+		android:text="Write new names" />
 </LinearLayout>

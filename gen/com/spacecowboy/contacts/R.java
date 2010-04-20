@@ -17,7 +17,6 @@ public final class R {
         public static final int OK=0x7f050013;
         public static final int accountIcon=0x7f050000;
         public static final int accountSpinner=0x7f050003;
-        public static final int addContactButton=0x7f050012;
         public static final int commacheck=0x7f050010;
         public static final int contactEmailEditText=0x7f050007;
         public static final int contactEmailTypeSpinner=0x7f050008;
@@ -33,6 +32,7 @@ public final class R {
         public static final int contactSaveButton=0x7f050009;
         public static final int firstAccountLine=0x7f050002;
         public static final int firstlastcheck=0x7f05000f;
+        public static final int fixNamesButton=0x7f050012;
         public static final int secondAccountLine=0x7f050001;
     }
     public static final class layout {
