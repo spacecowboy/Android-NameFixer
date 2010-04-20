@@ -45,9 +45,12 @@ public class Contact {
 			}
 			/* Trim any excess spaces */
 			displayName = displayName.trim();
-			//if (displayName.endsWith(","))
-			//	displayName = displayName
-			//			.substring(0, displayName.length() - 1).trim();
+			if (displayName.endsWith(","))
+				displayName = displayName
+						.substring(0, displayName.length() - 1).trim();
+			if (displayName.startsWith(","))
+				displayName = displayName
+						.substring(1).trim();
 
 			/* Finally return */
 			return displayName;
@@ -64,7 +67,8 @@ public class Contact {
 	}
 
 	/**
-	 * Will only compare the IDs of the contacts. If the IDs are the same, they are considered equal.
+	 * Will only compare the IDs of the contacts. If the IDs are the same, they
+	 * are considered equal.
 	 */
 	public boolean equals(Object o) {
 		if (o.getClass().equals(this.getClass())) {
