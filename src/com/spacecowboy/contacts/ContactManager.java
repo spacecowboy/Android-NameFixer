@@ -123,13 +123,6 @@ public final class ContactManager extends Activity implements
 				fixNames();
 			}
 		});
-		/*
-		 * mShowInvisibleControl.setOnCheckedChangeListener(new
-		 * OnCheckedChangeListener() { public void
-		 * onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-		 * Log.d(TAG, "mShowInvisibleControl changed: " + isChecked);
-		 * mShowInvisible = isChecked; populateContactList(); } });
-		 */
 
 		// Prepare model for account spinner
 		mAccounts = new ArrayList<AccountData>();
@@ -164,103 +157,51 @@ public final class ContactManager extends Activity implements
 	 * account spinner.
 	 */
 	private void populateContactList() {
-		if (mSelectedAccount != null) {
-			int layout;
-			if (mFirstLast) {
-				if (mComma)
-					layout = R.layout.contact_entry_firstlast_comma;
-				else
-					layout = R.layout.contact_entry_firstlast;
-			}
-			else {
-				if (mComma)
-					layout = R.layout.contact_entry_lastfirst_comma;
-				else
-					layout = R.layout.contact_entry_lastfirst;
-			}
-			// Build adapter with contact entries
-			Cursor cursor = getContacts();
-			String[] fields = new String[] {
-					ContactsContract.Data.DISPLAY_NAME,
-					ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME,
-					ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME };
-			try {
-				SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
-						layout, cursor, fields, new int[] {
-								R.id.contactEntryText, R.id.contactEntryFamily,
-								R.id.contactEntryGiven });
-				mContactList.setAdapter(adapter);
-			}
-			catch (Exception e) {
-				String error = e.getLocalizedMessage();
-				String what = e.toString();
-			}
-
-			while (cursor.moveToNext()) {
-
-				Contact c = new Contact(
-						cursor
-								.getString(cursor
-										.getColumnIndex(ContactsContract.Data.CONTACT_ID)),
-						cursor
-								.getString(cursor
-										.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME)),
-						cursor
-								.getString(cursor
-										.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME)));
-
-				contacts.add(c);
-
-			}
+		// clear contactlist
+		contacts.clear();
+		int layout;
+		if (mFirstLast) {
+			if (mComma)
+				layout = R.layout.contact_entry_firstlast_comma;
+			else
+				layout = R.layout.contact_entry_firstlast;
 		}
 		else {
-			int layout;
-			if (mFirstLast) {
-				if (mComma)
-					layout = R.layout.contact_entry_firstlast_comma;
-				else
-					layout = R.layout.contact_entry_firstlast;
-			}
-			else {
-				if (mComma)
-					layout = R.layout.contact_entry_lastfirst_comma;
-				else
-					layout = R.layout.contact_entry_lastfirst;
-			}
-			// Build adapter with contact entries
-			Cursor cursor = getContacts();
-			String[] fields = new String[] {
-					ContactsContract.Data.DISPLAY_NAME,
-					ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME,
-					ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME };
-			try {
-				SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
-						layout, cursor, fields, new int[] {
-								R.id.contactEntryText, R.id.contactEntryFamily,
-								R.id.contactEntryGiven });
-				mContactList.setAdapter(adapter);
-			}
-			catch (Exception e) {
-				String error = e.getLocalizedMessage();
-				String what = e.toString();
-			}
+			if (mComma)
+				layout = R.layout.contact_entry_lastfirst_comma;
+			else
+				layout = R.layout.contact_entry_lastfirst;
+		}
+		// Build adapter with contact entries
+		Cursor cursor = getContacts();
+		String[] fields = new String[] { ContactsContract.Data.DISPLAY_NAME,
+				ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME,
+				ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME };
+		// try {
+		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, layout,
+				cursor, fields, new int[] { R.id.contactEntryText,
+						R.id.contactEntryFamily, R.id.contactEntryGiven });
+		mContactList.setAdapter(adapter);
+		// }
+		// catch (Exception e) {
+		// String error = e.getLocalizedMessage();
+		// String what = e.toString();
+		// }
 
-			while (cursor.moveToNext()) {
+		while (cursor.moveToNext()) {
 
-				Contact c = new Contact(
-						cursor
-								.getString(cursor
-										.getColumnIndex(ContactsContract.Data.CONTACT_ID)),
-						cursor
-								.getString(cursor
-										.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME)),
-						cursor
-								.getString(cursor
-										.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME)));
+			Contact c = new Contact(
+					cursor.getString(cursor
+							.getColumnIndex(ContactsContract.Data.CONTACT_ID)),
+					cursor
+							.getString(cursor
+									.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME)),
+					cursor
+							.getString(cursor
+									.getColumnIndex(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME)));
 
-				contacts.add(c);
+			contacts.add(c);
 
-			}
 		}
 	}
 
@@ -270,195 +211,81 @@ public final class ContactManager extends Activity implements
 	 * @return A cursor for for accessing the contact list.
 	 */
 	private Cursor getContacts() {
+		Uri uri = ContactsContract.Data.CONTENT_URI;
 		if (this.mSelectedAccount != null) {
-			// Run query
 			/*
-			 * First we get a list of rawcontacts. Next, we will access their
-			 * data.
+			 * Filter by selected account
 			 */
-			// Uri uri = ContactsContract.RawContacts.CONTENT_URI;
-			Uri uri = ContactsContract.Data.CONTENT_URI.buildUpon()
-					.appendQueryParameter(
-							ContactsContract.RawContacts.ACCOUNT_NAME,
-							mSelectedAccount.getName()).appendQueryParameter(
-							ContactsContract.RawContacts.ACCOUNT_TYPE,
-							mSelectedAccount.getType())
-					/*
-					 * .appendQueryParameter( ContactsContract.Data.MIMETYPE,
-					 * ContactsContract
-					 * .CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-					 */
-					.build();
-			String[] projection = new String[] {
-					ContactsContract.Data._ID,
-					ContactsContract.Data.CONTACT_ID,
-					ContactsContract.Data.RAW_CONTACT_ID,
-					ContactsContract.Data.DISPLAY_NAME,
-					ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME,
-					ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME };
-			// String selection = ContactsContract.Contacts.IN_VISIBLE_GROUP +
-			// " = '" +
-			// (mShowInvisible ? "0" : "1") + "'";
-			String where = null;
-			String[] whereArgs = null;
-
-			// if (mSelectedAccount != null) {
-			// selection = ContactsContract.Groups.ACCOUNT_NAME + " = '" +
-			// mSelectedAccount.getName() + "'" + " AND " +
-			// ContactsContract.Groups.ACCOUNT_TYPE + " = '" +
-			// mSelectedAccount.getType() + "'";
-
-			where = ContactsContract.Data.MIMETYPE + " = ?";
-			whereArgs = new String[] { ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE };
-			// }
-
-			String sortOrder = ContactsContract.Data.DISPLAY_NAME
-					+ " COLLATE LOCALIZED ASC";
-			try {
-				Cursor c = managedQuery(uri, projection, where, whereArgs,
-						sortOrder);
-				return c;
-			}
-			catch (Exception e) {
-				String s = e.getMessage();
-			}
+			uri = uri.buildUpon().appendQueryParameter(
+					ContactsContract.RawContacts.ACCOUNT_NAME,
+					mSelectedAccount.getName()).appendQueryParameter(
+					ContactsContract.RawContacts.ACCOUNT_TYPE,
+					mSelectedAccount.getType()).build();
 		}
-		else {
-			Uri uri = ContactsContract.Data.CONTENT_URI;
-			String[] projection = new String[] {
-					ContactsContract.Data._ID,
-					ContactsContract.Data.CONTACT_ID,
-					ContactsContract.Data.RAW_CONTACT_ID,
-					ContactsContract.Data.DISPLAY_NAME,
-					ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME,
-					ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME };
-			// String selection = ContactsContract.Contacts.IN_VISIBLE_GROUP +
-			// " = '" +
-			// (mShowInvisible ? "0" : "1") + "'";
-			String where = null;
-			String[] whereArgs = null;
 
-			// if (mSelectedAccount != null) {
-			// selection = ContactsContract.Groups.ACCOUNT_NAME + " = '" +
-			// mSelectedAccount.getName() + "'" + " AND " +
-			// ContactsContract.Groups.ACCOUNT_TYPE + " = '" +
-			// mSelectedAccount.getType() + "'";
+		String[] projection = new String[] { ContactsContract.Data._ID,
+				ContactsContract.Data.CONTACT_ID,
+				ContactsContract.Data.RAW_CONTACT_ID,
+				ContactsContract.Data.DISPLAY_NAME,
+				ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME,
+				ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME };
 
-			where = ContactsContract.Data.MIMETYPE + " = ?";
-			whereArgs = new String[] { ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE };
-			// }
+		String where = ContactsContract.Data.MIMETYPE + " = ?";
+		String[] whereArgs = new String[] { ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE };
 
-			String sortOrder = ContactsContract.Data.DISPLAY_NAME
-					+ " COLLATE LOCALIZED ASC";
-			try {
-				Cursor c = managedQuery(uri, projection, where, whereArgs,
-						sortOrder);
-				return c;
-			}
-			catch (Exception e) {
-				String s = e.getMessage();
-			}
+		String sortOrder = ContactsContract.Data.DISPLAY_NAME
+				+ " COLLATE LOCALIZED ASC";
+		try {
+			Cursor c = managedQuery(uri, projection, where, whereArgs,
+					sortOrder);
+			return c;
 		}
+		catch (Exception e) {
+			String s = e.getMessage();
+			Log.d(TAG, "getContacts() crashed: " + s);
+		}
+
 		return null;
 	}
 
-	/*
-	 * public Contact getContactNames(String id) { // ArrayList<Contact>
-	 * contactList = new ArrayList<Contact>(); Contact contact = null; Cursor
-	 * conCur = managedQuery(ContactsContract.Data.CONTENT_URI, null,
-	 * ContactsContract.CommonDataKinds.StructuredName.CONTACT_ID + " = ?", new
-	 * String[] { id }, null); while (conCur.moveToNext()) { // This will get
-	 * all the data for the contact, we only want the name String type = conCur
-	 * .getString(conCur
-	 * .getColumnIndex(ContactsContract.CommonDataKinds.StructuredName
-	 * .MIMETYPE)); if (type
-	 * .equals(ContactsContract.CommonDataKinds.StructuredName
-	 * .CONTENT_ITEM_TYPE)) { String givenName = conCur .getString(conCur
-	 * .getColumnIndex
-	 * (ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME)); String
-	 * familyName = conCur .getString(conCur
-	 * .getColumnIndex(ContactsContract.CommonDataKinds
-	 * .StructuredName.FAMILY_NAME)); contact = new Contact(id, givenName,
-	 * familyName); return contact; } } return contact; }
-	 */
-
-	protected void fixNames() {
-		if (mSelectedAccount != null) {
-			for (Contact c : contacts) {
-				Uri uri = ContactsContract.Data.CONTENT_URI.buildUpon()
-						.appendQueryParameter(
-								ContactsContract.RawContacts.ACCOUNT_NAME,
-								mSelectedAccount.getName())
-						.appendQueryParameter(
-								ContactsContract.RawContacts.ACCOUNT_TYPE,
-								mSelectedAccount.getType()).build();
-				String where = ContactsContract.Data.MIMETYPE
-						+ " = ? AND "
-						+ ContactsContract.CommonDataKinds.StructuredName.CONTACT_ID
-						+ " = ?";
-				String[] whereArgs = new String[] {
-						ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE,
-						c.getId() };
-
-				ContentValues values = new ContentValues();
-				values
-						.put(
-								ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME,
-								c.getNewDisplayName(mFirstLast, mComma));
-
-				// values.put(ContactsContract.Data.DISPLAY_NAME,
-				// c.getNewDisplayName(mFirstLast, mComma));
-				try {
-					int count = getContentResolver().update(
-							ContactsContract.Data.CONTENT_URI, values, where,
-							whereArgs);
-					System.out.println(count);
-				}
-				catch (Exception e) {
-					@SuppressWarnings("unused")
-					String s = e.getMessage();
-				}
+	private void fixNames() {
+		for (Contact c : contacts) {
+			Uri uri = ContactsContract.Data.CONTENT_URI;
+			if (this.mSelectedAccount != null) {
+				/*
+				 * Filter by selected account
+				 */
+				uri = uri.buildUpon().appendQueryParameter(
+						ContactsContract.RawContacts.ACCOUNT_NAME,
+						mSelectedAccount.getName()).appendQueryParameter(
+						ContactsContract.RawContacts.ACCOUNT_TYPE,
+						mSelectedAccount.getType()).build();
 			}
-		} else {
-			for (Contact c : contacts) {
-				Uri uri = ContactsContract.Data.CONTENT_URI;
-				String where = ContactsContract.Data.MIMETYPE
-						+ " = ? AND "
-						+ ContactsContract.CommonDataKinds.StructuredName.CONTACT_ID
-						+ " = ?";
-				String[] whereArgs = new String[] {
-						ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE,
-						c.getId() };
 
-				ContentValues values = new ContentValues();
-				values
-						.put(
-								ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME,
-								c.getNewDisplayName(mFirstLast, mComma));
+			String where = ContactsContract.Data.MIMETYPE
+					+ " = ? AND "
+					+ ContactsContract.CommonDataKinds.StructuredName.CONTACT_ID
+					+ " = ?";
 
-				// values.put(ContactsContract.Data.DISPLAY_NAME,
-				// c.getNewDisplayName(mFirstLast, mComma));
-				try {
-					int count = getContentResolver().update(
-							ContactsContract.Data.CONTENT_URI, values, where,
-							whereArgs);
-					System.out.println(count);
-				}
-				catch (Exception e) {
-					@SuppressWarnings("unused")
-					String s = e.getMessage();
-				}
+			String[] whereArgs = new String[] {
+					ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE,
+					c.getId() };
+
+			ContentValues values = new ContentValues();
+			values
+					.put(
+							ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME,
+							c.getNewDisplayName(mFirstLast, mComma));
+
+			try {
+				getContentResolver().update(ContactsContract.Data.CONTENT_URI,
+						values, where, whereArgs);
+			}
+			catch (Exception e) {
+				String s = e.getMessage();
+				Log.d(TAG, "fixNames() crashed: " + s);
 			}
 		}
-	}
-
-	/**
-	 * Launches the ContactAdder activity to add a new contact to the selected
-	 * accont.
-	 */
-	protected void launchContactAdder() {
-		Intent i = new Intent(this, ContactAdder.class);
-		startActivity(i);
 	}
 
 	/**
